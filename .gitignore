@@ -1,2 +1,4 @@
 /venv
 notes.txt
+server/uploads/
+server/__pycache__/
