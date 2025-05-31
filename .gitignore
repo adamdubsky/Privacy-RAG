@@ -4,3 +4,4 @@ server/uploads/
 server/__pycache__/
 server/*.pyc
 server/test_parser.py
+server/vector_store/
