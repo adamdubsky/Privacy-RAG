@@ -1,14 +1,20 @@
-from sentence_transformers import SentenceTransformer
+from transformers import AutoTokenizer, AutoModel
+import torch
 
 # Load once at module level
-embed_model = SentenceTransformer("BAAI/bge-m3")#converts natural language text into dense vector representations that capture semantic meaning
+model_name = "BAAI/bge-m3"
+#tokenizer = AutoTokenizer.from_pretrained(model_name)
+#model = AutoModel.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+model = AutoModel.from_pretrained(model_name, trust_remote_code=True, use_safetensors=True)
 
+# Converts natural language text into dense vector representations that capture semantic meaning
 def embed_chunks(chunks: list[dict]) -> list[tuple[str, list[float], dict]]:
     """
     Generate embeddings for a list of text chunks and package them with metadata.
 
     This function takes in a list of chunk dictionaries (each containing text and
-    related attributes), uses the `embed_model` to compute embedding vectors for
+    related attributes), uses the embedding model to compute embedding vectors for
     each chunk’s text, and returns a list of tuples containing the chunk ID,
     embedding vector, and a metadata dictionary.
 
@@ -34,7 +40,18 @@ def embed_chunks(chunks: list[dict]) -> list[tuple[str, list[float], dict]]:
     """
     texts = [chunk["text"] for chunk in chunks]
     ids = [chunk["chunk_id"] for chunk in chunks]
-    embeddings = embed_model.encode(texts, convert_to_numpy=True).tolist()
+
+    encoded = tokenizer(texts, padding=True, truncation=True, return_tensors="pt")
+    with torch.no_grad():
+        model_output = model(**encoded)
+
+    # Mean pooling over token embeddings (ignoring padding)
+    attention_mask = encoded['attention_mask']
+    token_embeddings = model_output.last_hidden_state
+    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+    sum_embeddings = torch.sum(token_embeddings * input_mask_expanded, 1)
+    sum_mask = torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+    embeddings = (sum_embeddings / sum_mask).cpu().numpy().tolist()
 
     results = []
     for chunk, emb in zip(chunks, embeddings):
@@ -47,4 +64,3 @@ def embed_chunks(chunks: list[dict]) -> list[tuple[str, list[float], dict]]:
         results.append((chunk["chunk_id"], emb, metadata))
 
     return results
-
