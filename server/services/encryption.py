@@ -10,7 +10,8 @@ from cryptography.fernet import Fernet
 #
 # We're keeping it inline temporarily to simplify testing directly
 # from the GitHub repo without requiring extra setup steps.
-FERNET_KEY = Fernet.generate_key()
+#FERNET_KEY = Fernet.generate_key()
+FERNET_KEY = b"o1AeL2cLS2n8eVYxVZxOMXsVPpKUAYCZit7f8vMEgUs="  # <-- Must be static
 cipher = Fernet(FERNET_KEY)
 
 def encrypt_data(data: bytes) -> bytes:

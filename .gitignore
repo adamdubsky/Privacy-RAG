@@ -2,3 +2,5 @@
 notes.txt
 server/uploads/
 server/__pycache__/
+server/*.pyc
+server/test_parser.py
