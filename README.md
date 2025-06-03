@@ -1,38 +1,73 @@
 # Privacy-RAG
 
+Privacy-RAG is an offline Retrieval-Augmented Generation (RAG) backend
+built for privacy sensitive domains such as accounting and finance.  It
+uses **FastAPI** for the web interface, **llama.cpp** for running a local
+large language model, **bge-m3** embeddings and **ChromaDB** for vector
+storage.  The project performs all processing locally with no external
+API calls.
 
-A fully local, secure Retrieval-Augmented Generation (RAG) system designed for accounting and financial services. Built using FastAPI, local LLMs (via llama.cpp), local embeddings (bge-m3), and ChromaDB — with zero external API calls.
+## Features
 
-## Overview
+- Upload encrypted PDF or Excel files
+- Parse and chunk documents into manageable pieces
+- Generate embeddings for each chunk using a local model
+- Persist embeddings in a local ChromaDB vector store
+- Query the documents via a chat style API backed by a local LLM
 
-This system:
-- Accepts PDF and Excel files
-- Parses and chunks documents locally
-- Embeds content with a local model
-- Stores embeddings in a local vector database (Chroma)
-- Answers natural language questions using a local LLM
+## Directory Structure
 
-All processing is done entirely offline, making it ideal for privacy-sensitive domains like accounting, legal, and finance.
+```
+server/               Backend code
+├── main.py           FastAPI application
+├── ask.py            Simple CLI for questions
+├── routers/          API route definitions
+└── services/         Parsing, chunking, embedding and storage utilities
+```
 
-## Core Features (Work in Progress)
+## Installation
 
-- Local file upload (PDF/Excel)
-- Chunked parsing and storage
-- FastAPI backend with `/upload` and `/chat` routes
-- All data handled and stored securely, locally
+1. Install Python 3.10 or newer.
+2. Clone this repository and install the requirements:
 
-## Hopeful Features (Planned)
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Provide a local Llama model path by editing `.env` or setting the
+   environment variable `LLAMA_MODEL_PATH`.
 
-- Chunk-level access control (per user/team)
-- PDF viewer with highlightable citations
-- LLM reasoning trace (“train of thought”) in output
-- Sensitive info redaction
-- User memory and session history
-- Full audit logging
-- Dockerized deployment (backend and frontend)
-- Simple Vue-based frontend (chat and file upload)
+## Running the API
 
-## Contact
+Start the development server with **uvicorn**:
 
-For questions, feedback, or collaboration, contact:  
-**adamdubsky@gmail.com**
+```bash
+uvicorn server.main:app --reload
+```
+
+The interactive documentation is available at `http://localhost:8000/docs`.
+
+### CLI Usage
+
+A small command line helper is included for quick experiments:
+
+```bash
+python server/ask.py
+```
+
+You will be prompted for a question and the answer will be generated using
+the local model and document context.
+
+## Security Notes
+
+Uploaded files are encrypted with a symmetric key before being stored on
+disk.  The key is hard coded for development purposes and should be
+replaced with a secure key management solution for production deployments.
+
+## Contributing
+
+Pull requests are welcome!  Feel free to open issues or suggest
+improvements.
+
+## License
+
+This project is released under the MIT License.
