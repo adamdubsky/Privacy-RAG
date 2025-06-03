@@ -8,7 +8,9 @@ from llama_cpp import Llama
 from langchain_core.embeddings import Embeddings
 
 load_dotenv()
-model_path = os.getenv("LLAMA_MODEL_PATH")
+MODEL_PATH = os.getenv("LLAMA_MODEL_PATH")
+CONTEXT_LENGTH = os.getenv("CONTEXT_LENGTH", "1024")
+THREADS = os.getenv("THREADS", "4")
 
 
 #embedding_model = HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
@@ -39,10 +41,10 @@ retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": 5})
 
 
 llm = Llama(
-    model_path=model_path,  # adjust this path to your actual model
-    n_ctx=2048,
-    n_threads=8
-)
+    model_path=MODEL_PATH,  # Path to your LLaMA model
+    n_ctx=1024,
+    n_threads=4
+) #modify based on your system's capabilities
 
 def answer_question(question: str) -> str:
     # Step 1: Retrieve relevant documents
@@ -53,7 +55,17 @@ def answer_question(question: str) -> str:
     context = "\n\n".join(doc.page_content for doc in docs)
 
     # Step 2: Build the prompt
-    prompt = f"Answer the question based only on the following context:\n\n{context}\n\nQuestion: {question}"
+    #prompt = f"Answer the question based only on the following context:\n\n{context}\n\nQuestion: {question}"
+    prompt = f"""<s>[INST] <<SYS>>
+    You are a helpful assistant.
+    <</SYS>>
+
+    Answer the following question using only the context provided:
+
+    {context}
+
+    Question: {question} [/INST]"""
+
 
     # Step 3: Generate response from LLaMA
     result = llm(prompt)
