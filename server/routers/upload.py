@@ -11,7 +11,20 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 @router.post("/")
 async def upload_file(file: UploadFile = File(...)):
-    file_path = UPLOAD_DIR / f"{file.filename}.encrypted"
+    file_name = Path(file.filename).name
+    if not file_name:
+        raise HTTPException(status_code=400, detail="Invalid file name")
+    if not file_name.endswith(('.pdf', '.xls', '.xlsx')):
+        raise HTTPException(status_code=400, detail="Unsupported file type. Only PDF and Excel files are allowed.")
+    if len(file_name) > 255:
+        raise HTTPException(status_code=400, detail="File name is too long. Maximum length is 255 characters.")
+    if not file_name.isascii():
+        raise HTTPException(status_code=400, detail="File name contains non-ASCII characters.")
+    if not file_name.isidentifier():
+        raise HTTPException(status_code=400, detail="File name contains invalid characters. Only alphanumeric characters and underscores are allowed.")
+    if not file_name[0].isalpha():
+        raise HTTPException(status_code=400, detail="File name must start with an alphabetic character.")
+    file_path = UPLOAD_DIR / f"{file_name}.encrypted"
 
     try:
         content = await file.read()
