@@ -121,4 +121,5 @@ def parse_excel(file_path: Path) -> list[dict]:
         })
 
     tmp_path.unlink()  # Delete the temporary file
+    wb.close()  # Close the workbook
     return results
