@@ -39,7 +39,7 @@ retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": 5})
 
 
 llm = Llama(
-    model_path="./models/llama-2-7b.Q4_K_M.gguf",  # adjust this path to your actual model
+    model_path=model_path,  # adjust this path to your actual model
     n_ctx=2048,
     n_threads=8
 )
